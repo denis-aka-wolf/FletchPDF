@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
 
 import '../../core/files/pdf_file_service.dart';
+import '../organize/merge_pdf_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -135,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
               ),
               const SizedBox(height: 16),
-              const Wrap(
+              Wrap(
                 spacing: 14,
                 runSpacing: 14,
                 children: [
@@ -143,7 +144,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.call_merge_rounded,
                     title: 'Объединить PDF',
                     subtitle: 'Собрать документы в один файл',
-                    status: 'Движок подключается',
+                    status: 'Готово',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const MergePdfScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _ToolTile(
                     icon: Icons.content_cut_rounded,
@@ -330,12 +338,14 @@ class _ToolTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.status,
+    this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final String status;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -344,9 +354,12 @@ class _ToolTile extends StatelessWidget {
     return SizedBox(
       width: 320,
       child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Row(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
@@ -386,6 +399,7 @@ class _ToolTile extends StatelessWidget {
                 ),
               ),
             ],
+          ),
           ),
         ),
       ),
