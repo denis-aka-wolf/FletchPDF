@@ -218,9 +218,9 @@ class _HomeScreenState extends State<HomeScreen> {
         const Divider(height: 1),
         Expanded(
           child: PdfViewer.file(
-            file,
+            file.path,
             params: const PdfViewerParams(
-              enableTextSelection: true,
+              textSelectionParams: PdfTextSelectionParams(enabled: true),
             ),
           ),
         ),
