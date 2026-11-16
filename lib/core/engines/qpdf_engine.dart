@@ -3,11 +3,21 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'pdf_engine.dart';
+import 'qpdf_locator.dart';
 
 class QpdfEngine implements PdfEngine {
   QpdfEngine({required this.executablePath});
 
   final String executablePath;
+
+  /// Creates an engine only when a usable QPDF executable can be located.
+  static Future<QpdfEngine?> discover({String? configuredPath}) async {
+    final executable = await const QpdfLocator().locate(
+      configuredPath: configuredPath,
+    );
+    if (executable == null) return null;
+    return QpdfEngine(executablePath: executable);
+  }
 
   @override
   String get id => 'qpdf';
@@ -33,9 +43,12 @@ class QpdfEngine implements PdfEngine {
       );
 
       if (result.exitCode != 0) {
+        final details = _cleanOutput(result.stderr);
         return EngineStatus(
           available: false,
-          message: _cleanOutput(result.stderr),
+          message: details.isEmpty
+              ? 'QPDF завершился с кодом ${result.exitCode}.'
+              : details,
         );
       }
 
@@ -60,8 +73,27 @@ class QpdfEngine implements PdfEngine {
       throw ArgumentError('Путь входного файла не может быть пустым.');
     }
 
-    final output = File(outputPath);
-    final outputDirectory = Directory(p.dirname(output.absolute.path));
+    final normalizedOutput = p.normalize(p.absolute(outputPath));
+    for (final inputPath in inputPaths) {
+      final normalizedInput = p.normalize(p.absolute(inputPath));
+      final samePath = Platform.isWindows
+          ? normalizedInput.toLowerCase() == normalizedOutput.toLowerCase()
+          : normalizedInput == normalizedOutput;
+      if (samePath) {
+        throw ArgumentError(
+          'Выходной файл не должен совпадать с исходным PDF.',
+        );
+      }
+    }
+
+    for (final inputPath in inputPaths) {
+      if (!await File(inputPath).exists()) {
+        throw FileSystemException('Входной PDF не найден.', inputPath);
+      }
+    }
+
+    final output = File(normalizedOutput);
+    final outputDirectory = Directory(p.dirname(normalizedOutput));
     if (!await outputDirectory.exists()) {
       await outputDirectory.create(recursive: true);
     }
@@ -69,12 +101,12 @@ class QpdfEngine implements PdfEngine {
     final args = <String>['--empty', '--pages'];
     for (final inputPath in inputPaths) {
       args
-        ..add(inputPath)
+        ..add(p.absolute(inputPath))
         ..add('1-z');
     }
     args
       ..add('--')
-      ..add(output.absolute.path);
+      ..add(normalizedOutput);
 
     final result = await Process.run(
       executablePath,
@@ -83,11 +115,15 @@ class QpdfEngine implements PdfEngine {
     );
 
     if (result.exitCode != 0) {
-      final details = _cleanOutput(result.stderr);
+      final stderr = _cleanOutput(result.stderr);
+      final stdout = _cleanOutput(result.stdout);
+      final details = stderr.isNotEmpty ? stderr : stdout;
       throw ProcessException(
         executablePath,
         args,
-        details.isEmpty ? 'QPDF завершился с кодом ${result.exitCode}.' : details,
+        details.isEmpty
+            ? 'QPDF завершился с кодом ${result.exitCode}.'
+            : details,
         result.exitCode,
       );
     }
