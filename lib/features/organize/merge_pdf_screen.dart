@@ -147,6 +147,13 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
       setState(() => _error = 'Укажите имя выходного PDF-файла.');
       return;
     }
+    if (p.basename(fileName) != fileName ||
+        fileName.contains(RegExp(r'[<>:"/\\|?*]'))) {
+      setState(() {
+        _error = 'Имя файла содержит недопустимые символы или путь.';
+      });
+      return;
+    }
 
     final normalizedName = fileName.toLowerCase().endsWith('.pdf')
         ? fileName
