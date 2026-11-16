@@ -300,7 +300,8 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
                         : ReorderableListView.builder(
                             padding: const EdgeInsets.all(10),
                             itemCount: _files.length,
-                            onReorder: _isMerging ? (_, __) {} : _reorderFiles,
+                            buildDefaultDragHandles: !_isMerging,
+                            onReorder: _reorderFiles,
                             itemBuilder: (context, index) {
                               final file = _files[index];
                               return Card(
@@ -331,7 +332,8 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
                                           onPressed: () => _removeFile(index),
                                           icon: const Icon(Icons.close),
                                         ),
-                                      const Icon(Icons.drag_handle),
+                                      if (!_isMerging)
+                                        const Icon(Icons.drag_handle),
                                     ],
                                   ),
                                 ),
