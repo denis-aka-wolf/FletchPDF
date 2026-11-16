@@ -1,0 +1,33 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Windows build artifacts
+windows/flutter/ephemeral/
+windows/runner/Debug/
+windows/runner/Release/
+windows/runner/x64/
+*.dll
+*.exe
+*.pdb
+
+# Local files and logs
+*.log
+logs/
+.local/
+.env
+.env.*
+
+# Test and coverage
+coverage/
