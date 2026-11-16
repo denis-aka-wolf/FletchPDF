@@ -18,9 +18,9 @@ The project aims to provide a comprehensive set of PDF tools without a server, c
 ## Technology
 
 - Flutter 3.50 / Dart 3.14 baseline.
-- [pdfrx](https://pub.dev/packages/pdfrx) for PDF viewing and PDFium integration.
+- [pdfrx](https://pub.dev/packages/pdfrx) for PDF viewing and PDFium integration, including local page manipulation.
 - [file_picker](https://pub.dev/packages/file_picker) for native file selection.
-- QPDF is the first planned external processing adapter. Its executable is not bundled in this initial source commit.
+- PDF merging is implemented through the PDFium document API already used by pdfrx. QPDF remains a planned adapter for structural operations that are not covered by the current PDFium API. Its executable is not bundled.
 
 Exact dependency versions are declared in `pubspec.yaml`. Third-party native binaries are not yet included.
 
@@ -61,7 +61,7 @@ licenses/              Third-party license register
 
 ## PDF engine strategy
 
-The UI must depend on Dart abstractions. Native libraries and command-line tools are integrated behind adapters. The initial viewer uses pdfrx/PDFium. Processing engines such as QPDF, MuPDF, Ghostscript, Tesseract, and LibreOffice will be evaluated individually for each operation.
+The UI must depend on Dart abstractions. Native libraries and command-line tools are integrated behind adapters. The viewer and the first page-combination workflow use pdfrx/PDFium. The merge screen supports multiple files, drag-and-drop ordering, output folder/name selection, overwrite confirmation, and local processing. Processing engines such as QPDF, MuPDF, Ghostscript, Tesseract, and LibreOffice will be evaluated individually for operations not covered by the existing PDFium API.
 
 No engine is considered bundled or available until its exact version, binary provenance, platform support, redistribution terms, and license notices have been reviewed.
 
