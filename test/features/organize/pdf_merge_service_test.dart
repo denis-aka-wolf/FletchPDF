@@ -21,8 +21,8 @@ void main() {
   });
 
   test('requires at least two input documents', () async {
-    expect(
-      () => service.merge(
+    await expectLater(
+      service.merge(
         inputPaths: const ['one.pdf'],
         outputPath: '${temporaryDirectory.path}/merged.pdf',
       ),
@@ -34,8 +34,8 @@ void main() {
     final input = File('${temporaryDirectory.path}/source.pdf');
     await input.writeAsBytes([1, 2, 3]);
 
-    expect(
-      () => service.merge(
+    await expectLater(
+      service.merge(
         inputPaths: [input.path, input.path],
         outputPath: '${temporaryDirectory.path}/merged.pdf',
       ),
@@ -49,8 +49,8 @@ void main() {
     await input.writeAsBytes([1, 2, 3]);
     await secondInput.writeAsBytes([4, 5, 6]);
 
-    expect(
-      () => service.merge(
+    await expectLater(
+      service.merge(
         inputPaths: [input.path, secondInput.path],
         outputPath: input.path,
       ),
@@ -66,8 +66,8 @@ void main() {
     await secondInput.writeAsBytes([4, 5, 6]);
     await output.writeAsBytes([7, 8, 9]);
 
-    expect(
-      () => service.merge(
+    await expectLater(
+      service.merge(
         inputPaths: [firstInput.path, secondInput.path],
         outputPath: output.path,
       ),
