@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:pdfrx_engine/pdfrx_engine.dart';
+import 'package:pdfrx/pdfrx.dart';
 
-/// Performs PDF page operations through the PDFium engine used by pdfrx.
+/// Combines pages with the PDFium engine already used by the viewer.
 ///
-/// The service does not depend on Flutter widgets or external CLI executables.
+/// No external executable, server, or network connection is required.
 class PdfMergeService {
   const PdfMergeService();
 
@@ -30,7 +30,7 @@ class PdfMergeService {
         throw ArgumentError('Один и тот же PDF добавлен в список несколько раз.');
       }
       if (!_hasPdfExtension(input)) {
-        throw ArgumentError('В список добавлен файл, который не имеет расширения PDF: $input');
+        throw ArgumentError('Файл не имеет расширения PDF: $input');
       }
       if (_samePath(input, normalizedOutput)) {
         throw ArgumentError('Выходной файл не должен совпадать с исходным PDF.');
@@ -62,14 +62,15 @@ class PdfMergeService {
       await outputDirectory.create(recursive: true);
     }
 
-    final temporaryPath = '$normalizedOutput.fletchpdf-tmp';
+    final operationId = DateTime.now().microsecondsSinceEpoch;
+    final temporaryPath = '$normalizedOutput.$operationId.tmp';
+    final backupPath = '$normalizedOutput.$operationId.bak';
     final temporaryFile = File(temporaryPath);
-    if (await temporaryFile.exists()) {
-      await temporaryFile.delete();
-    }
+    final backupFile = File(backupPath);
 
     final sourceDocuments = <PdfDocument>[];
     PdfDocument? outputDocument;
+    var originalMovedToBackup = false;
 
     try {
       for (final input in normalizedInputs) {
@@ -103,13 +104,18 @@ class PdfMergeService {
             normalizedOutput,
           );
         }
-        await outputFile.delete();
+        await outputFile.rename(backupPath);
+        originalMovedToBackup = true;
       }
 
       await temporaryFile.rename(normalizedOutput);
 
-      final savedLength = await outputFile.length();
-      if (savedLength == 0) {
+      if (originalMovedToBackup && await backupFile.exists()) {
+        await backupFile.delete();
+        originalMovedToBackup = false;
+      }
+
+      if (await outputFile.length() == 0) {
         throw FileSystemException(
           'Созданный PDF оказался пустым.',
           normalizedOutput,
@@ -118,6 +124,13 @@ class PdfMergeService {
     } on Object {
       if (await temporaryFile.exists()) {
         await temporaryFile.delete();
+      }
+
+      if (originalMovedToBackup && await backupFile.exists()) {
+        if (await outputFile.exists()) {
+          await outputFile.delete();
+        }
+        await backupFile.rename(normalizedOutput);
       }
       rethrow;
     } finally {
