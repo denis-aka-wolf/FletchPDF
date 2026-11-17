@@ -28,7 +28,7 @@ class PdfCropService {
       for (var index = 0; index < document.pages.length; index++) {
         final nativePage = pdfium.FPDF_LoadPage(nativeDocument, index);
         if (nativePage.address == 0) {
-          throw StateError('PDFium не смог открыть страницу \${index + 1}.');
+          throw StateError('PDFium не смог открыть страницу ${index + 1}.');
         }
 
         final values = calloc<ffi.Float>(4);
@@ -42,7 +42,7 @@ class PdfCropService {
           );
           if (hasMediaBox == 0) {
             throw StateError(
-              'Не удалось прочитать границы страницы \${index + 1}.',
+              'Не удалось прочитать границы страницы ${index + 1}.',
             );
           }
 
@@ -141,7 +141,7 @@ class PdfCropService {
       }
       for (final entry in selections.entries) {
         if (entry.key < 0 || entry.key >= pageCount) {
-          throw RangeError('Страница \${entry.key + 1} не существует.');
+          throw RangeError('Страница ${entry.key + 1} не существует.');
         }
         entry.value.validate();
       }
@@ -160,7 +160,7 @@ class PdfCropService {
           final nativePage = pdfium.FPDF_LoadPage(nativeDocument, pageIndex);
           if (nativePage.address == 0) {
             throw StateError(
-              'PDFium не смог открыть страницу \${pageIndex + 1}.',
+              'PDFium не смог открыть страницу ${pageIndex + 1}.',
             );
           }
 
