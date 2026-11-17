@@ -28,7 +28,7 @@ class PdfCropService {
       for (var index = 0; index < document.pages.length; index++) {
         final nativePage = pdfium.FPDF_LoadPage(nativeDocument, index);
         if (nativePage.address == 0) {
-          throw StateError('PDFium не смог открыть страницу ${index + 1}.');
+          throw StateError('PDFium не смог открыть страницу \${index + 1}.');
         }
 
         final values = calloc<ffi.Float>(4);
@@ -41,7 +41,9 @@ class PdfCropService {
             values.elementAt(3),
           );
           if (hasMediaBox == 0) {
-            throw StateError('Не удалось прочитать границы страницы ${index + 1}.');
+            throw StateError(
+              'Не удалось прочитать границы страницы \${index + 1}.',
+            );
           }
 
           final mediaBox = PdfCropBounds(
@@ -77,8 +79,9 @@ class PdfCropService {
     });
   }
 
+  /// Crops a separate in-memory copy and exports it without mutating the
+  /// document currently displayed by the UI or the original file.
   Future<String> cropAndSave({
-    required PdfDocument sourceDocument,
     required String sourcePath,
     required Map<int, NormalizedCropRect> selections,
     required String outputPath,
@@ -88,12 +91,13 @@ class PdfCropService {
       throw ArgumentError('Не выбраны страницы для обрезки.');
     }
 
-    final pageCount = sourceDocument.pages.length;
-    for (final index in selections.keys) {
-      if (index < 0 || index >= pageCount) {
-        throw RangeError('Страница ${index + 1} не существует.');
-      }
-      selections[index]!.validate();
+    final normalizedSource = p.normalize(p.absolute(sourcePath));
+    final sourceFile = File(normalizedSource);
+    if (!await sourceFile.exists()) {
+      throw FileSystemException('Исходный PDF не найден.', normalizedSource);
+    }
+    if (await sourceFile.length() == 0) {
+      throw FileSystemException('Исходный PDF пуст.', normalizedSource);
     }
 
     final output = p.normalize(p.absolute(outputPath));
@@ -101,7 +105,6 @@ class PdfCropService {
       throw ArgumentError('Выходной файл должен иметь расширение .pdf.');
     }
 
-    final normalizedSource = p.normalize(p.absolute(sourcePath));
     final samePath = Platform.isWindows
         ? output.toLowerCase() == normalizedSource.toLowerCase()
         : output == normalizedSource;
@@ -122,46 +125,7 @@ class PdfCropService {
       );
     }
 
-    final bounds = await readVisibleBounds(sourceDocument);
-    final pages = sourceDocument.pages;
-    final pdfium = getPdfium();
-    final changedPages = <int>[];
-
-    await sourceDocument.useNativeDocumentHandle((nativeDocumentHandle) {
-      final nativeDocument =
-          ffi.Pointer<fpdf_document_t__>.fromAddress(nativeDocumentHandle);
-
-      for (final entry in selections.entries) {
-        final pageIndex = entry.key;
-        final nativePage = pdfium.FPDF_LoadPage(nativeDocument, pageIndex);
-        if (nativePage.address == 0) {
-          throw StateError('PDFium не смог открыть страницу ${pageIndex + 1}.');
-        }
-
-        try {
-          final cropBounds = PdfCropGeometry.toPdfBounds(
-            selection: entry.value,
-            visibleBounds: bounds[pageIndex],
-            rotation: pages[pageIndex].rotation,
-          );
-          pdfium.FPDFPage_SetCropBox(
-            nativePage,
-            cropBounds.left,
-            cropBounds.bottom,
-            cropBounds.right,
-            cropBounds.top,
-          );
-          changedPages.add(pageIndex + 1);
-        } finally {
-          pdfium.FPDF_ClosePage(nativePage);
-        }
-      }
-    });
-
-    await sourceDocument.reloadPages(
-      pageNumbersToReload: changedPages,
-    );
-
+    PdfDocument? sourceDocument;
     PdfDocument? resultDocument;
     final operationId = DateTime.now().microsecondsSinceEpoch;
     final temporaryFile = File('$output.$operationId.tmp');
@@ -170,10 +134,63 @@ class PdfCropService {
     var committed = false;
 
     try {
+      sourceDocument = await PdfDocument.openFile(normalizedSource);
+      final pageCount = sourceDocument.pages.length;
+      if (pageCount < 1) {
+        throw StateError('В документе нет страниц.');
+      }
+      for (final entry in selections.entries) {
+        if (entry.key < 0 || entry.key >= pageCount) {
+          throw RangeError('Страница \${entry.key + 1} не существует.');
+        }
+        entry.value.validate();
+      }
+
+      final bounds = await readVisibleBounds(sourceDocument);
+      final pages = sourceDocument.pages;
+      final pdfium = getPdfium();
+      final changedPages = <int>[];
+
+      await sourceDocument.useNativeDocumentHandle((nativeDocumentHandle) {
+        final nativeDocument =
+            ffi.Pointer<fpdf_document_t__>.fromAddress(nativeDocumentHandle);
+
+        for (final entry in selections.entries) {
+          final pageIndex = entry.key;
+          final nativePage = pdfium.FPDF_LoadPage(nativeDocument, pageIndex);
+          if (nativePage.address == 0) {
+            throw StateError(
+              'PDFium не смог открыть страницу \${pageIndex + 1}.',
+            );
+          }
+
+          try {
+            final cropBounds = PdfCropGeometry.toPdfBounds(
+              selection: entry.value,
+              visibleBounds: bounds[pageIndex],
+              rotation: pages[pageIndex].rotation,
+            );
+            pdfium.FPDFPage_SetCropBox(
+              nativePage,
+              cropBounds.left,
+              cropBounds.bottom,
+              cropBounds.right,
+              cropBounds.top,
+            );
+            changedPages.add(pageIndex + 1);
+          } finally {
+            pdfium.FPDF_ClosePage(nativePage);
+          }
+        }
+      });
+
+      await sourceDocument.reloadPages(
+        pageNumbersToReload: changedPages,
+      );
+
       resultDocument = await PdfDocument.createNew(sourceName: output);
       resultDocument.pages = List<PdfPage>.of(sourceDocument.pages);
 
-      // Keep the source document alive until PDFium finishes assembling.
       final bytes = await resultDocument.encodePdf();
       if (bytes.isEmpty) {
         throw StateError('PDFium вернул пустой результат обрезки.');
@@ -221,6 +238,9 @@ class PdfCropService {
     } finally {
       if (resultDocument != null) {
         await resultDocument.dispose();
+      }
+      if (sourceDocument != null) {
+        await sourceDocument.dispose();
       }
     }
   }
