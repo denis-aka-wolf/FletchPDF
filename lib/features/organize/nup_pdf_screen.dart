@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -46,7 +47,8 @@ class _NupPdfScreenState extends State<NupPdfScreen> {
     _nameController.dispose();
     _marginController.dispose();
     _spacingController.dispose();
-    _previewDocument?.dispose();
+    final document = _previewDocument;
+    if (document != null) unawaited(document.dispose());
     super.dispose();
   }
 
