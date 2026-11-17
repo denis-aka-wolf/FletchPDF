@@ -61,7 +61,7 @@ licenses/              Third-party license register
 
 ## PDF engine strategy
 
-The UI must depend on Dart abstractions. Native libraries and command-line tools are integrated behind adapters. The viewer and the first page-combination workflow use pdfrx/PDFium. The merge screen supports multiple files, drag-and-drop ordering, output folder/name selection, overwrite confirmation, and local processing. Processing engines such as QPDF, MuPDF, Ghostscript, Tesseract, and LibreOffice will be evaluated individually for operations not covered by the existing PDFium API.
+The UI must depend on Dart abstractions. Native libraries and command-line tools are integrated behind adapters. The viewer and the first page-combination workflow use pdfrx/PDFium. The merge screen supports multiple files, drag-and-drop ordering, output folder/name selection, overwrite confirmation, and local processing. The split screen accepts semicolon-separated page groups (for example, `1-3; 4-6; 7-10`) and writes each group as a separate PDF, with output collision checks and rollback support. Processing engines such as QPDF, MuPDF, Ghostscript, Tesseract, and LibreOffice will be evaluated individually for operations not covered by the existing PDFium API.
 
 No engine is considered bundled or available until its exact version, binary provenance, platform support, redistribution terms, and license notices have been reviewed.
 
