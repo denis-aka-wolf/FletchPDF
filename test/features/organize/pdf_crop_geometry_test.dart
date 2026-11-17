@@ -1,6 +1,6 @@
 import 'package:fletchpdf/features/organize/services/pdf_crop_geometry.dart';
-import 'package:pdfrx/pdfrx.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pdfrx/pdfrx.dart';
 
 void main() {
   const visible = PdfCropBounds(
