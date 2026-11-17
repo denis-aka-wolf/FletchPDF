@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:ffi/ffi.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdfrx/pdfrx.dart';
-import 'package:pdfium_dart/pdfium_dart.dart';
+import 'package:pdfium_flutter/pdfium_flutter.dart';
 
 import 'pdf_crop_geometry.dart';
 
