@@ -549,6 +549,16 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
                   ),
                 ),
                 Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                  child: Text(
+                    'Важно: CropBox скрывает область за рамкой, но не удаляет её содержимое из PDF. Это не замена Redaction.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                  ),
+                ),
+                Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
                   child: Wrap(
                     spacing: 10,
