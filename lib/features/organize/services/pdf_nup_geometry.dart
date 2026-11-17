@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 /// Physical dimensions and grid geometry for a PDF N-up sheet.
 class PdfNupGeometry {
   const PdfNupGeometry._();
