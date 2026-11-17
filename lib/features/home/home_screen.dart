@@ -5,6 +5,7 @@ import 'package:pdfrx/pdfrx.dart';
 
 import '../../core/files/pdf_file_service.dart';
 import '../organize/merge_pdf_screen.dart';
+import '../organize/split_pdf_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -157,7 +158,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.content_cut_rounded,
                     title: 'Разделить PDF',
                     subtitle: 'Разбить документ на части',
-                    status: 'В разработке',
+                    status: 'Готово',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const SplitPdfScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _ToolTile(
                     icon: Icons.image_outlined,
