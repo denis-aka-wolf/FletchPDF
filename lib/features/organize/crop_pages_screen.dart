@@ -19,6 +19,10 @@ class CropPagesScreen extends StatefulWidget {
 class _CropPagesScreenState extends State<CropPagesScreen> {
   final PdfCropService _service = const PdfCropService();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _leftMarginController = TextEditingController(text: '0.0');
+  final TextEditingController _rightMarginController = TextEditingController(text: '0.0');
+  final TextEditingController _topMarginController = TextEditingController(text: '0.0');
+  final TextEditingController _bottomMarginController = TextEditingController(text: '0.0');
 
   PdfDocument? _document;
   File? _sourceFile;
@@ -35,6 +39,10 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _leftMarginController.dispose();
+    _rightMarginController.dispose();
+    _topMarginController.dispose();
+    _bottomMarginController.dispose();
     final document = _document;
     if (document != null) {
       unawaited(document.dispose());
@@ -93,6 +101,7 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
         _error = null;
       });
       opened = null;
+      _syncMarginControllers();
       if (previous != null) await previous.dispose();
     } on Object catch (error) {
       if (mounted) setState(() => _error = _readableError(error));
@@ -117,6 +126,7 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
       _savedPath = null;
       _error = null;
     });
+    _syncMarginControllers();
   }
 
   void _updateSelection(Offset first, Offset second, Size size) {
@@ -142,6 +152,7 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
       _savedPath = null;
       _error = null;
     });
+    _syncMarginControllers();
   }
 
   void _resetSelection() {
@@ -151,6 +162,77 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
       _savedPath = null;
       _error = null;
     });
+    _syncMarginControllers();
+  }
+
+  void _syncMarginControllers({String? skip}) {
+    final document = _document;
+    if (document == null || document.pages.isEmpty) return;
+    final page = document.pages[_currentPage];
+    final widthMm = page.width * 25.4 / 72;
+    final heightMm = page.height * 25.4 / 72;
+    final values = <String, double>{
+      'left': _selection.left * widthMm,
+      'right': (1 - _selection.right) * widthMm,
+      'top': _selection.top * heightMm,
+      'bottom': (1 - _selection.bottom) * heightMm,
+    };
+    final controllers = <String, TextEditingController>{
+      'left': _leftMarginController,
+      'right': _rightMarginController,
+      'top': _topMarginController,
+      'bottom': _bottomMarginController,
+    };
+    for (final entry in controllers.entries) {
+      if (entry.key == skip) continue;
+      final value = values[entry.key]!.toStringAsFixed(1);
+      if (entry.value.text != value) entry.value.text = value;
+    }
+  }
+
+  void _onMarginChanged(String side, String rawValue) {
+    final document = _document;
+    if (document == null) return;
+    final value = double.tryParse(rawValue.replaceAll(',', '.'));
+    if (value == null || !value.isFinite || value < 0) return;
+
+    final page = document.pages[_currentPage];
+    final widthMm = page.width * 25.4 / 72;
+    final heightMm = page.height * 25.4 / 72;
+    var left = _selection.left * widthMm;
+    var right = (1 - _selection.right) * widthMm;
+    var top = _selection.top * heightMm;
+    var bottom = (1 - _selection.bottom) * heightMm;
+    switch (side) {
+      case 'left':
+        left = value;
+        break;
+      case 'right':
+        right = value;
+        break;
+      case 'top':
+        top = value;
+        break;
+      case 'bottom':
+        bottom = value;
+        break;
+    }
+    if (left + right >= widthMm - 0.36 ||
+        top + bottom >= heightMm - 0.36) {
+      return;
+    }
+
+    setState(() {
+      _selection = NormalizedCropRect(
+        left: left / widthMm,
+        top: top / heightMm,
+        right: 1 - right / widthMm,
+        bottom: 1 - bottom / heightMm,
+      );
+      _savedPath = null;
+      _error = null;
+    });
+    _syncMarginControllers(skip: side);
   }
 
   Future<void> _chooseOutputDirectory() async {
@@ -246,6 +328,7 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
         _selection = const NormalizedCropRect.full();
         _savedPath = result;
       });
+      _syncMarginControllers();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('PDF сохранён: ${p.basename(result)}'),
@@ -462,11 +545,44 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
                   child: Text(
                     _applyToAll
                         ? 'Выделенная область будет применена ко всем страницам с учётом их ориентации.'
-                        : 'Потяните мышью по странице, чтобы выделить область для обрезки.',
+                        : 'Выделите область мышью или задайте отступы в миллиметрах.',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: colors.onSurfaceVariant,
                         ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    children: [
+                      _MarginField(
+                        label: 'Слева',
+                        controller: _leftMarginController,
+                        enabled: !_isSaving,
+                        onChanged: (value) => _onMarginChanged('left', value),
+                      ),
+                      _MarginField(
+                        label: 'Справа',
+                        controller: _rightMarginController,
+                        enabled: !_isSaving,
+                        onChanged: (value) => _onMarginChanged('right', value),
+                      ),
+                      _MarginField(
+                        label: 'Сверху',
+                        controller: _topMarginController,
+                        enabled: !_isSaving,
+                        onChanged: (value) => _onMarginChanged('top', value),
+                      ),
+                      _MarginField(
+                        label: 'Снизу',
+                        controller: _bottomMarginController,
+                        enabled: !_isSaving,
+                        onChanged: (value) => _onMarginChanged('bottom', value),
+                      ),
+                    ],
                   ),
                 ),
                 if (_error != null)
@@ -578,6 +694,39 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
               _CropMessage(message: _error!, isError: true),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MarginField extends StatelessWidget {
+  const _MarginField({
+    required this.label,
+    required this.controller,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final bool enabled;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 112,
+      child: TextField(
+        controller: controller,
+        enabled: enabled,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          labelText: label,
+          suffixText: 'мм',
+          isDense: true,
+          border: const OutlineInputBorder(),
         ),
       ),
     );
