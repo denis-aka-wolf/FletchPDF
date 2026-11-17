@@ -10,6 +10,7 @@ import '../organize/extract_pages_screen.dart';
 import '../organize/organize_pages_screen.dart';
 import '../organize/crop_pages_screen.dart';
 import '../organize/nup_pdf_screen.dart';
+import '../organize/booklet_pdf_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -219,6 +220,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => const NupPdfScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _ToolTile(
+                    icon: Icons.menu_book_rounded,
+                    title: 'Создать буклет',
+                    subtitle: 'Раскладка страниц для двусторонней печати',
+                    status: 'Готово',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const BookletPdfScreen(),
                         ),
                       );
                     },
