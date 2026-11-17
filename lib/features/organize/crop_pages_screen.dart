@@ -88,7 +88,7 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
         _applyToAll = false;
         _outputDirectory = p.dirname(path);
         _nameController.text =
-            '\${p.basenameWithoutExtension(path)}_cropped';
+            '${p.basenameWithoutExtension(path)}_cropped';
         _savedPath = null;
         _error = null;
       });
@@ -248,7 +248,7 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('PDF сохранён: \${p.basename(result)}'),
+          content: Text('PDF сохранён: ${p.basename(result)}'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -265,7 +265,7 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Файл уже существует'),
         content: Text(
-          'Файл "\${p.basename(path)}" будет заменён. Продолжить?',
+          'Файл "${p.basename(path)}" будет заменён. Продолжить?',
         ),
         actions: [
           TextButton(
@@ -317,7 +317,7 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
                         ),
                       ),
                       Text(
-                        '\${_currentPage + 1} / \${document.pages.length}',
+                        '${_currentPage + 1} / ${document.pages.length}',
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
                       IconButton(
