@@ -88,9 +88,9 @@ class PdfCropService {
       throw ArgumentError('Не выбраны страницы для обрезки.');
     }
 
-    final pages = sourceDocument.pages;
+    final pageCount = sourceDocument.pages.length;
     for (final index in selections.keys) {
-      if (index < 0 || index >= pages.length) {
+      if (index < 0 || index >= pageCount) {
         throw RangeError('Страница ${index + 1} не существует.');
       }
       selections[index]!.validate();
@@ -123,6 +123,7 @@ class PdfCropService {
     }
 
     final bounds = await readVisibleBounds(sourceDocument);
+    final pages = sourceDocument.pages;
     final pdfium = getPdfium();
     final changedPages = <int>[];
 
