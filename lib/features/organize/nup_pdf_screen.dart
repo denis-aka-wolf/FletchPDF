@@ -314,7 +314,7 @@ class _NupPdfScreenState extends State<NupPdfScreen> {
                       SizedBox(
                         width: 220,
                         child: DropdownButtonFormField<int>(
-                          value: _pagesPerSheet,
+                          initialValue: _pagesPerSheet,
                           decoration: const InputDecoration(
                             labelText: 'Страниц на листе',
                             border: OutlineInputBorder(),
@@ -337,7 +337,7 @@ class _NupPdfScreenState extends State<NupPdfScreen> {
                       SizedBox(
                         width: 180,
                         child: DropdownButtonFormField<String>(
-                          value: _paper,
+                          initialValue: _paper,
                           decoration: const InputDecoration(
                             labelText: 'Формат бумаги',
                             border: OutlineInputBorder(),
