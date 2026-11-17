@@ -142,9 +142,9 @@ class PdfNupService {
                       final hasBounds = pdfium.FPDFPageObj_GetBounds(
                         pageObject,
                         bounds,
-                        bounds.elementAt(1),
-                        bounds.elementAt(2),
-                        bounds.elementAt(3),
+                        bounds + 1,
+                        bounds + 2,
+                        bounds + 3,
                       );
                       if (hasBounds == 0) {
                         pdfium.FPDFPageObj_Destroy(pageObject);
@@ -212,34 +212,43 @@ class PdfNupService {
               }
 
               final writer = calloc<FPDF_FILEWRITE>();
+              Object? writeFailure;
               final callback = ffi.NativeCallable<
-                  ffi.NativeFunction<
-                      ffi.Int Function(
-                        ffi.Pointer<FPDF_FILEWRITE>,
-                        ffi.Pointer<ffi.Void>,
-                        ffi.UnsignedLong,
-                      )>>.isolateLocal((self, data, size) {
+                  int Function(
+                    ffi.Pointer<FPDF_FILEWRITE>,
+                    ffi.Pointer<ffi.Void>,
+                    int,
+                  )>.isolateLocal((
+                ffi.Pointer<FPDF_FILEWRITE> _,
+                ffi.Pointer<ffi.Void> data,
+                int size,
+              ) {
                 try {
                   nativeOutput.writeFromSync(
                     data.cast<ffi.Uint8>().asTypedList(size),
                   );
                   return 1;
-                } on Object {
+                } on Object catch (error) {
+                  writeFailure = error;
                   return 0;
                 }
-              });
+              }, exceptionalReturn: 0);
 
               try {
                 writer.ref
                   ..version = 1
                   ..WriteBlock = callback.nativeFunction;
                 if (pdfium.FPDF_SaveAsCopy(
-                      nativeOutputDocument,
-                      writer,
-                      0,
-                    ) ==
-                    0) {
-                  throw StateError('PDFium не смог сохранить результат N-up.');
+                          nativeOutputDocument,
+                          writer,
+                          0,
+                        ) ==
+                        0 ||
+                    writeFailure != null) {
+                  throw StateError(
+                    'PDFium не смог сохранить результат N-up'
+                    '${writeFailure == null ? '.' : ': $writeFailure'}',
+                  );
                 }
               } finally {
                 callback.close();
