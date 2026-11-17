@@ -17,7 +17,7 @@ dependencies:
   material_ui: ^1.11.0
   path_provider: ^2.1.6
   pdfrx: ^2.12.1
-  pdfium_dart: ^0.4.2
+  pdfium_flutter: ^0.4.2
 
 dev_dependencies:
   flutter_test:
