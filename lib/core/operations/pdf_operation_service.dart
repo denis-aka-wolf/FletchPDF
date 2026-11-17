@@ -7,8 +7,7 @@ import 'operation_result.dart';
 ///
 /// Widgets call this service rather than invoking native tools directly.
 class PdfOperationService {
-  const PdfOperationService({required QpdfEngine qpdfEngine})
-      : _qpdfEngine = qpdfEngine;
+  const PdfOperationService(this._qpdfEngine);
 
   final QpdfEngine _qpdfEngine;
 
