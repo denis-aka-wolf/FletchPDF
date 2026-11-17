@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material_ui.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdfrx/pdfrx.dart';
 
@@ -92,13 +92,13 @@ class _ExtractPagesScreenState extends State<ExtractPagesScreen> {
   Future<void> _chooseOutputDirectory() async {
     if (_isExtracting) return;
     try {
-      final directory = await FilePicker.getDirectoryPath(
+      final directoryUri = await FilePicker.pickDirectory(
         dialogTitle: 'Выберите папку для сохранения PDF',
         initialDirectory: _outputDirectory,
       );
-      if (!mounted || directory == null) return;
+      if (!mounted || directoryUri == null) return;
       setState(() {
-        _outputDirectory = directory;
+        _outputDirectory = directoryUri.toFilePath();
         _error = null;
         _createdFile = null;
       });
