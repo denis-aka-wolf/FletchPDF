@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material_ui.dart';
 import 'package:pdfrx/pdfrx.dart';
 
 import '../../core/files/pdf_file_service.dart';
