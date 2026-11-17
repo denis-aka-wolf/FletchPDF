@@ -65,7 +65,7 @@ void main() {
     test('rejects page numbers outside the document', () {
       expect(
         () => PageRangeParser.parseGroups('1-3; 4-8', pageCount: 7),
-        throwsRangeError,
+        throwsA(isA<RangeError>()),
       );
     });
 
