@@ -169,7 +169,12 @@ class PdfSplitService {
       for (final backupPath in backupPaths.values) {
         final backupFile = File(backupPath);
         if (await backupFile.exists()) {
-          await backupFile.delete();
+          try {
+            await backupFile.delete();
+          } on FileSystemException {
+            // The new output files are already committed. A leftover backup
+            // is safer than reporting failure after deleting some old files.
+          }
         }
       }
 
