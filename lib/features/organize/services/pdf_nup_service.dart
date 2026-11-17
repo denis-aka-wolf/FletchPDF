@@ -214,10 +214,10 @@ class PdfNupService {
               final writer = calloc<FPDF_FILEWRITE>();
               Object? writeFailure;
               final callback = ffi.NativeCallable<
-                  int Function(
+                  ffi.Int Function(
                     ffi.Pointer<FPDF_FILEWRITE>,
                     ffi.Pointer<ffi.Void>,
-                    int,
+                    ffi.UnsignedLong,
                   )>.isolateLocal((
                 ffi.Pointer<FPDF_FILEWRITE> _,
                 ffi.Pointer<ffi.Void> data,
