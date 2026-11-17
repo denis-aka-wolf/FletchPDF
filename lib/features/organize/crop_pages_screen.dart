@@ -424,13 +424,18 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
                                                 size,
                                               );
                                             },
-                                      onPanUpdate: _isSaving || _dragStart == null
+                                      onPanUpdate: _isSaving
                                           ? null
-                                          : (details) => _updateSelection(
-                                                _dragStart!,
-                                                details.localPosition,
-                                                size,
-                                              ),
+                                          : (details) {
+                                              final start = _dragStart;
+                                              if (start != null) {
+                                                _updateSelection(
+                                                  start,
+                                                  details.localPosition,
+                                                  size,
+                                                );
+                                              }
+                                            },
                                       onPanEnd: (_) => _dragStart = null,
                                       child: CustomPaint(
                                         size: size,
