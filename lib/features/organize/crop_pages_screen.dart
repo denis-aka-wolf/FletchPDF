@@ -301,13 +301,14 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
       if (!overwrite || !mounted) return;
     }
 
-    final selections = <int, NormalizedCropRect>{
-      if (_applyToAll)
-        for (var index = 0; index < document.pages.length; index++)
-          index: _selection
-      else
-        _currentPage: _selection,
-    };
+    final selections = <int, NormalizedCropRect>{};
+    if (_applyToAll) {
+      for (var index = 0; index < document.pages.length; index++) {
+        selections[index] = _selection;
+      }
+    } else {
+      selections[_currentPage] = _selection;
+    }
 
     setState(() {
       _isSaving = true;
@@ -318,6 +319,7 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
     try {
       final result = await _service.cropAndSave(
         sourceDocument: document,
+        sourcePath: source.path,
         selections: selections,
         outputPath: outputPath,
         overwriteExisting: overwrite,
@@ -500,12 +502,6 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
                                           ? null
                                           : (details) {
                                               _dragStart = details.localPosition;
-                                              _updateSelection(
-                                                details.localPosition,
-                                                details.localPosition +
-                                                    const Offset(0.02, 0.02),
-                                                size,
-                                              );
                                             },
                                       onPanUpdate: _isSaving
                                           ? null
