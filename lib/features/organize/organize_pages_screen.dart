@@ -126,6 +126,7 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
     if (_isSaving || _pages.length <= 1) return;
     _remember();
     final updated = List<PdfPage>.of(_pages)..removeAt(index);
+    _document!.pages = updated;
     setState(() {
       _pages = updated;
       _savedPath = null;
@@ -138,6 +139,7 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
     _remember();
     final updated = List<PdfPage>.of(_pages);
     updated.insert(index + 1, _pages[index].duplicate());
+    _document!.pages = updated;
     setState(() {
       _pages = updated;
       _savedPath = null;
@@ -150,6 +152,7 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
     _remember();
     final updated = List<PdfPage>.of(_pages);
     updated[index] = updated[index].rotatedCW90();
+    _document!.pages = updated;
     setState(() {
       _pages = updated;
       _savedPath = null;
