@@ -114,6 +114,7 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
     final updated = List<PdfPage>.of(_pages);
     final page = updated.removeAt(oldIndex);
     updated.insert(newIndex, page);
+    _document!.pages = updated;
     setState(() {
       _pages = updated;
       _savedPath = null;
@@ -158,8 +159,10 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
 
   void _undo() {
     if (_history.isEmpty || _isSaving) return;
+    final restored = _history.removeLast();
+    _document!.pages = restored;
     setState(() {
-      _pages = _history.removeLast();
+      _pages = restored;
       _savedPath = null;
       _error = null;
     });
@@ -398,7 +401,7 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
                         itemBuilder: (context, index) {
                           final page = _pages[index];
                           return Card(
-                            key: ValueKey('${page.id}_${index}'),
+                            key: ValueKey(page.id),
                             margin: const EdgeInsets.only(bottom: 10),
                             clipBehavior: Clip.antiAlias,
                             child: SizedBox(
