@@ -318,13 +318,11 @@ class _CropPagesScreenState extends State<CropPagesScreen> {
 
     try {
       final result = await _service.cropAndSave(
-        sourceDocument: document,
         sourcePath: source.path,
         selections: selections,
         outputPath: outputPath,
         overwriteExisting: overwrite,
       );
-      await _service.readVisibleBounds(document);
       if (!mounted) return;
       setState(() {
         _selection = const NormalizedCropRect.full();
