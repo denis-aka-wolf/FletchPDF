@@ -6,6 +6,7 @@ import 'package:pdfrx/pdfrx.dart';
 import '../../core/files/pdf_file_service.dart';
 import '../organize/merge_pdf_screen.dart';
 import '../organize/split_pdf_screen.dart';
+import '../organize/extract_pages_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -163,6 +164,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => const SplitPdfScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _ToolTile(
+                    icon: Icons.file_download_outlined,
+                    title: 'Извлечь страницы',
+                    subtitle: 'Собрать выбранные страницы в один PDF',
+                    status: 'Готово',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const ExtractPagesScreen(),
                         ),
                       );
                     },
