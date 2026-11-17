@@ -127,7 +127,7 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
     if (_isSaving || _pages.length <= 1) return;
     _remember();
     final updated = List<_OrganizedPage>.of(_pages)..removeAt(index);
-    _document!.pages = updated;
+    _document!.pages = updated.map((entry) => entry.page).toList();
     setState(() {
       _pages = updated;
       _savedPath = null;
