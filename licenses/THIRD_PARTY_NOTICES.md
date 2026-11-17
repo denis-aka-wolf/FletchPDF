@@ -23,11 +23,11 @@
 
 ## Native engines
 
-Внешние native engine executables пока не включены в репозиторий или дистрибутив. PDFium поставляется зависимостями pdfrx/pdfium_flutter и используется для просмотра, объединения, изменения CropBox и векторного размещения страниц при N-up.
+Внешние native engine executables пока не включены в репозиторий или дистрибутив. PDFium поставляется зависимостями pdfrx/pdfium_flutter и используется для просмотра, объединения, изменения CropBox, векторного размещения страниц при N-up и формирования буклетов.
 
 | Компонент | Предполагаемая лицензия | Статус |
 |---|---|---|
-| PDFium | BSD-3-Clause (проверить notices конкретной сборки) | Используется через pdfrx; N-up использует PDFium Form XObject API |
+| PDFium | BSD-3-Clause (проверить notices конкретной сборки) | Используется через pdfrx; N-up и буклет используют PDFium Form XObject API |
 | QPDF | Apache-2.0 | Планируется, бинарник не включён |
 | MuPDF | AGPL-3.0 / Commercial | Не включён |
 | Ghostscript | AGPL-3.0 / Commercial | Не включён |
