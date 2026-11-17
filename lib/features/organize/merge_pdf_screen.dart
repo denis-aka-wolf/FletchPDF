@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material_ui.dart';
 import 'package:path/path.dart' as p;
 
 import 'services/pdf_merge_service.dart';
@@ -90,15 +90,15 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
     if (_isMerging) return;
 
     try {
-      final directory = await FilePicker.getDirectoryPath(
+      final directoryUri = await FilePicker.pickDirectory(
         dialogTitle: 'Выберите папку для сохранения результата',
         initialDirectory: _outputDirectory,
       );
 
-      if (!mounted || directory == null) return;
+      if (!mounted || directoryUri == null) return;
 
       setState(() {
-        _outputDirectory = directory;
+        _outputDirectory = directoryUri.toFilePath();
         _error = null;
         _successPath = null;
       });
@@ -118,7 +118,6 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
 
   void _reorderFiles(int oldIndex, int newIndex) {
     setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
       final file = _files.removeAt(oldIndex);
       _files.insert(newIndex, file);
       _successPath = null;
@@ -301,7 +300,7 @@ class _MergePdfScreenState extends State<MergePdfScreen> {
                             padding: const EdgeInsets.all(10),
                             itemCount: _files.length,
                             buildDefaultDragHandles: !_isMerging,
-                            onReorder: _reorderFiles,
+                            onReorderItem: _reorderFiles,
                             itemBuilder: (context, index) {
                               final file = _files[index];
                               return Card(
