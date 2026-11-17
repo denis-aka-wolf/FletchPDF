@@ -7,6 +7,10 @@ build/
 .flutter-plugins
 .flutter-plugins-dependencies
 .metadata
+.windows/
+/windows/
+/pubspec.lock
+/analysis_options.yaml
 
 # IDE
 .idea/
