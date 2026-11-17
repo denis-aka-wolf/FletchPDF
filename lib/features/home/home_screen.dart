@@ -209,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     file.uri.pathSegments.isEmpty
                         ? file.path
-                        : Uri.decodeComponent(file.uri.pathSegments.last),
+                        : file.uri.pathSegments.last,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.w600),
