@@ -562,12 +562,28 @@ class _BookletSidePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final cells = PdfBookletGeometry.layout(
-      paperWidthMm: paperSize.width,
-      paperHeightMm: paperSize.height,
-      marginMm: marginMm,
-      gutterMm: gutterMm,
-    );
+    late final List<PdfBookletCell> cells;
+    try {
+      cells = PdfBookletGeometry.layout(
+        paperWidthMm: paperSize.width,
+        paperHeightMm: paperSize.height,
+        marginMm: marginMm,
+        gutterMm: gutterMm,
+      );
+    } on ArgumentError catch (error) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colors.errorContainer,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          error.message?.toString() ?? 'Некорректные параметры листа.',
+          style: TextStyle(color: colors.onErrorContainer),
+        ),
+      );
+    }
     final pageIndices = [side.leftPageIndex, side.rightPageIndex];
 
     return Column(
