@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material_ui.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdfrx/pdfrx.dart';
 
@@ -18,11 +18,11 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
   final PdfPageOrganizerService _service =
       const PdfPageOrganizerService();
   final TextEditingController _nameController = TextEditingController();
-  final List<List<PdfPage>> _history = [];
+  final List<List<_OrganizedPage>> _history = [];
 
   PdfDocument? _document;
   File? _sourceFile;
-  List<PdfPage> _pages = [];
+  List<_OrganizedPage> _pages = [];
   String? _outputDirectory;
   bool _isOpening = false;
   bool _isSaving = false;
@@ -65,7 +65,9 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
       }
 
       final opened = await PdfDocument.openFile(path);
-      final openedPages = List<PdfPage>.of(opened.pages);
+      final openedPages = opened.pages
+          .map((page) => _OrganizedPage(page: page))
+          .toList();
       if (openedPages.isEmpty) {
         await opened.dispose();
         throw StateError('В документе нет страниц.');
@@ -96,13 +98,12 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
   }
 
   void _remember() {
-    _history.add(List<PdfPage>.of(_pages));
+    _history.add(List<_OrganizedPage>.of(_pages));
     if (_history.length > 50) _history.removeAt(0);
   }
 
   void _reorder(int oldIndex, int newIndex) {
     if (_isSaving) return;
-    if (newIndex > oldIndex) newIndex--;
     if (oldIndex == newIndex ||
         oldIndex < 0 ||
         oldIndex >= _pages.length ||
@@ -111,10 +112,10 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
       return;
     }
     _remember();
-    final updated = List<PdfPage>.of(_pages);
+    final updated = List<_OrganizedPage>.of(_pages);
     final page = updated.removeAt(oldIndex);
     updated.insert(newIndex, page);
-    _document!.pages = updated;
+    _document!.pages = updated.map((entry) => entry.page).toList();
     setState(() {
       _pages = updated;
       _savedPath = null;
@@ -125,7 +126,7 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
   void _removePage(int index) {
     if (_isSaving || _pages.length <= 1) return;
     _remember();
-    final updated = List<PdfPage>.of(_pages)..removeAt(index);
+    final updated = List<_OrganizedPage>.of(_pages)..removeAt(index);
     _document!.pages = updated;
     setState(() {
       _pages = updated;
@@ -137,9 +138,9 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
   void _duplicatePage(int index) {
     if (_isSaving) return;
     _remember();
-    final updated = List<PdfPage>.of(_pages);
-    updated.insert(index + 1, _pages[index].duplicate());
-    _document!.pages = updated;
+    final updated = List<_OrganizedPage>.of(_pages);
+    updated.insert(index + 1, _OrganizedPage(page: _pages[index].page));
+    _document!.pages = updated.map((entry) => entry.page).toList();
     setState(() {
       _pages = updated;
       _savedPath = null;
@@ -150,9 +151,9 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
   void _rotatePage(int index) {
     if (_isSaving) return;
     _remember();
-    final updated = List<PdfPage>.of(_pages);
-    updated[index] = updated[index].rotatedCW90();
-    _document!.pages = updated;
+    final updated = List<_OrganizedPage>.of(_pages);
+    updated[index] = updated[index].withPage(updated[index].page.rotatedCW90());
+    _document!.pages = updated.map((entry) => entry.page).toList();
     setState(() {
       _pages = updated;
       _savedPath = null;
@@ -163,7 +164,7 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
   void _undo() {
     if (_history.isEmpty || _isSaving) return;
     final restored = _history.removeLast();
-    _document!.pages = restored;
+    _document!.pages = restored.map((entry) => entry.page).toList();
     setState(() {
       _pages = restored;
       _savedPath = null;
@@ -174,13 +175,13 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
   Future<void> _chooseOutputDirectory() async {
     if (_isSaving) return;
     try {
-      final directory = await FilePicker.getDirectoryPath(
+      final directoryUri = await FilePicker.pickDirectory(
         dialogTitle: 'Выберите папку для сохранения PDF',
         initialDirectory: _outputDirectory,
       );
-      if (!mounted || directory == null) return;
+      if (!mounted || directoryUri == null) return;
       setState(() {
-        _outputDirectory = directory;
+        _outputDirectory = directoryUri.toFilePath();
         _savedPath = null;
         _error = null;
       });
@@ -234,7 +235,7 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
     try {
       final result = await _service.save(
         sourceDocument: document,
-        pages: _pages,
+        pages: _pages.map((entry) => entry.page).toList(),
         outputPath: outputPath,
         overwriteExisting: overwrite,
       );
@@ -400,11 +401,11 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
                         padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
                         itemCount: _pages.length,
                         buildDefaultDragHandles: false,
-                        onReorder: _reorder,
+                        onReorderItem: _reorder,
                         itemBuilder: (context, index) {
-                          final page = _pages[index];
+                          final page = _pages[index].page;
                           return Card(
-                            key: ValueKey(page.id),
+                            key: ValueKey(_pages[index].key),
                             margin: const EdgeInsets.only(bottom: 10),
                             clipBehavior: Clip.antiAlias,
                             child: SizedBox(
@@ -548,6 +549,19 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
         ),
       ),
     );
+  }
+}
+
+class _OrganizedPage {
+  _OrganizedPage({required this.page}) : key = Object();
+
+  _OrganizedPage._({required this.key, required this.page});
+
+  final Object key;
+  final PdfPage page;
+
+  _OrganizedPage withPage(PdfPage updatedPage) {
+    return _OrganizedPage._(key: key, page: updatedPage);
   }
 }
 
