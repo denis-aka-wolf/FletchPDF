@@ -9,6 +9,7 @@ import '../organize/split_pdf_screen.dart';
 import '../organize/extract_pages_screen.dart';
 import '../organize/organize_pages_screen.dart';
 import '../organize/crop_pages_screen.dart';
+import '../organize/nup_pdf_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -205,6 +206,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => const CropPagesScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _ToolTile(
+                    icon: Icons.grid_view_rounded,
+                    title: 'Несколько страниц на листе',
+                    subtitle: 'N-up: сетка, формат бумаги и поля',
+                    status: 'Готово',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const NupPdfScreen(),
                         ),
                       );
                     },
