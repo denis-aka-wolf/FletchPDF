@@ -68,8 +68,12 @@ class _SplitPdfScreenState extends State<SplitPdfScreen> {
       }
 
       final document = await PdfDocument.openFile(path);
-      final pageCount = document.pages.length;
-      await document.dispose();
+      late final int pageCount;
+      try {
+        pageCount = document.pages.length;
+      } finally {
+        await document.dispose();
+      }
 
       if (pageCount < 2) {
         throw StateError(
