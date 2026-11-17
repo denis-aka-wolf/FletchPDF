@@ -146,24 +146,64 @@ class PdfNupService {
                         bounds + 2,
                         bounds + 3,
                       );
-                      if (hasBounds == 0) {
-                        pdfium.FPDFPageObj_Destroy(pageObject);
-                        throw StateError(
-                          'Не удалось определить размеры страницы ${sourcePageIndex + 1}.',
-                        );
-                      }
+                      var left = bounds[0];
+                      var bottom = bounds[1];
+                      var right = bounds[2];
+                      var top = bounds[3];
+                      var sourceWidth = right - left;
+                      var sourceHeight = top - bottom;
 
-                      final left = bounds[0];
-                      final bottom = bounds[1];
-                      final right = bounds[2];
-                      final top = bounds[3];
-                      final sourceWidth = right - left;
-                      final sourceHeight = top - bottom;
-                      if (sourceWidth <= 0 || sourceHeight <= 0) {
-                        pdfium.FPDFPageObj_Destroy(pageObject);
-                        throw StateError(
-                          'Страница ${sourcePageIndex + 1} имеет некорректные размеры.',
+                      // An imported Form XObject can report an empty bounding
+                      // box for a valid PDF page (for example, a blank page).
+                      // In that case use the dimensions reported by PDFium
+                      // for the original page instead of rejecting the file.
+                      final boundsAreValid = hasBounds != 0 &&
+                          left.isFinite &&
+                          bottom.isFinite &&
+                          right.isFinite &&
+                          top.isFinite &&
+                          sourceWidth.isFinite &&
+                          sourceHeight.isFinite &&
+                          sourceWidth > 0 &&
+                          sourceHeight > 0;
+                      if (!boundsAreValid) {
+                        final sourcePage = pdfium.FPDF_LoadPage(
+                          nativeSource,
+                          sourcePageIndex,
                         );
+                        if (sourcePage.address == 0) {
+                          pdfium.FPDFPageObj_Destroy(pageObject);
+                          throw StateError(
+                            'Не удалось определить размеры страницы ${sourcePageIndex + 1}.',
+                          );
+                        }
+
+                        double pageWidth;
+                        double pageHeight;
+                        try {
+                          pageWidth = pdfium.FPDF_GetPageWidthF(sourcePage);
+                          pageHeight = pdfium.FPDF_GetPageHeightF(sourcePage);
+                        } finally {
+                          pdfium.FPDF_ClosePage(sourcePage);
+                        }
+
+                        if (!pageWidth.isFinite ||
+                            !pageHeight.isFinite ||
+                            pageWidth <= 0 ||
+                            pageHeight <= 0) {
+                          pdfium.FPDFPageObj_Destroy(pageObject);
+                          throw StateError(
+                            'PDFium вернул недопустимые размеры страницы ${sourcePageIndex + 1}: '
+                            '${pageWidth} × ${pageHeight} pt.',
+                          );
+                        }
+
+                        left = 0;
+                        bottom = 0;
+                        right = pageWidth;
+                        top = pageHeight;
+                        sourceWidth = pageWidth;
+                        sourceHeight = pageHeight;
                       }
 
                       final cell = cells[cellIndex];
