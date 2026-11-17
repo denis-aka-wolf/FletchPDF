@@ -79,6 +79,7 @@ class PdfCropService {
 
   Future<String> cropAndSave({
     required PdfDocument sourceDocument,
+    required String sourcePath,
     required Map<int, NormalizedCropRect> selections,
     required String outputPath,
     bool overwriteExisting = false,
@@ -100,10 +101,10 @@ class PdfCropService {
       throw ArgumentError('Выходной файл должен иметь расширение .pdf.');
     }
 
-    final sourcePath = p.normalize(p.absolute(sourceDocument.sourceName));
+    final normalizedSource = p.normalize(p.absolute(sourcePath));
     final samePath = Platform.isWindows
-        ? output.toLowerCase() == sourcePath.toLowerCase()
-        : output == sourcePath;
+        ? output.toLowerCase() == normalizedSource.toLowerCase()
+        : output == normalizedSource;
     if (samePath) {
       throw ArgumentError('Нельзя сохранить результат поверх исходного PDF.');
     }
