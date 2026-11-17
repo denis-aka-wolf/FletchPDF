@@ -7,6 +7,7 @@ import '../../core/files/pdf_file_service.dart';
 import '../organize/merge_pdf_screen.dart';
 import '../organize/split_pdf_screen.dart';
 import '../organize/extract_pages_screen.dart';
+import '../organize/organize_pages_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -177,6 +178,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => const ExtractPagesScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _ToolTile(
+                    icon: Icons.auto_awesome_mosaic_outlined,
+                    title: 'Организация страниц',
+                    subtitle: 'Порядок, удаление, копирование и поворот',
+                    status: 'Готово',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const OrganizePagesScreen(),
                         ),
                       );
                     },
