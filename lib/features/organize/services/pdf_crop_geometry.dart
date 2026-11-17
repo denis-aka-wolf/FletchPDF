@@ -92,21 +92,25 @@ class PdfCropGeometry {
         right = visibleBounds.left + selection.right * width;
         bottom = visibleBounds.bottom + (1 - selection.bottom) * height;
         top = visibleBounds.bottom + (1 - selection.top) * height;
+        break;
       case PdfPageRotation.clockwise90:
         left = visibleBounds.left + selection.top * width;
         right = visibleBounds.left + selection.bottom * width;
         bottom = visibleBounds.bottom + selection.left * height;
         top = visibleBounds.bottom + selection.right * height;
+        break;
       case PdfPageRotation.clockwise180:
         left = visibleBounds.left + (1 - selection.right) * width;
         right = visibleBounds.left + (1 - selection.left) * width;
         bottom = visibleBounds.bottom + selection.top * height;
         top = visibleBounds.bottom + selection.bottom * height;
+        break;
       case PdfPageRotation.clockwise270:
         left = visibleBounds.left + (1 - selection.bottom) * width;
         right = visibleBounds.left + (1 - selection.top) * width;
         bottom = visibleBounds.bottom + (1 - selection.right) * height;
         top = visibleBounds.bottom + (1 - selection.left) * height;
+        break;
     }
 
     final result = PdfCropBounds(
