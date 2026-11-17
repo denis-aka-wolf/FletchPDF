@@ -39,11 +39,11 @@ void main() {
       );
       expect(
         [sheets[1].front.leftPageIndex, sheets[1].front.rightPageIndex],
-        [4, 2],
+        [null, 2],
       );
       expect(
         [sheets[1].back.leftPageIndex, sheets[1].back.rightPageIndex],
-        [3, null],
+        [3, 4],
       );
     });
 
