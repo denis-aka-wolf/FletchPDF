@@ -403,7 +403,6 @@ class _OrganizePagesScreenState extends State<OrganizePagesScreen> {
                         buildDefaultDragHandles: false,
                         onReorderItem: _reorder,
                         itemBuilder: (context, index) {
-                          final page = _pages[index].page;
                           return Card(
                             key: ValueKey(_pages[index].key),
                             margin: const EdgeInsets.only(bottom: 10),
